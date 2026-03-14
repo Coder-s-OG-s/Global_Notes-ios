@@ -2,6 +2,15 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @AppStorage("preferredColorScheme") private var preferredColorScheme = 2
+
+    private var colorScheme: ColorScheme? {
+        switch preferredColorScheme {
+        case 1: return .light
+        case 2: return .dark
+        default: return nil
+        }
+    }
 
     var body: some View {
         Group {
@@ -17,6 +26,7 @@ struct ContentView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: authViewModel.isAuthenticated)
         .animation(.easeInOut(duration: 0.3), value: authViewModel.isLoading)
+        .preferredColorScheme(colorScheme)
         .task {
             await authViewModel.checkSession()
         }
