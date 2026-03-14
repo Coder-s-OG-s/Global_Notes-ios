@@ -4,6 +4,7 @@ struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var profileVM = ProfileViewModel()
     @Environment(\.dismiss) private var dismiss
+    @State private var showSignOutConfirm = false
 
     var body: some View {
         NavigationStack {
@@ -66,10 +67,7 @@ struct ProfileView: View {
                 // Sign Out
                 Section {
                     Button(role: .destructive) {
-                        Task {
-                            await authViewModel.signOut()
-                            dismiss()
-                        }
+                        showSignOutConfirm = true
                     } label: {
                         HStack {
                             Spacer()
@@ -79,11 +77,27 @@ struct ProfileView: View {
                     }
                 }
             }
+            .alert("Sign Out", isPresented: $showSignOutConfirm) {
+                Button("Cancel", role: .cancel) {}
+                Button("Sign Out", role: .destructive) {
+                    Task {
+                        await authViewModel.signOut()
+                        dismiss()
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to sign out?")
+            }
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
+                }
+            }
+            .overlay {
+                if profileVM.isLoading {
+                    ProgressView()
                 }
             }
             .task {

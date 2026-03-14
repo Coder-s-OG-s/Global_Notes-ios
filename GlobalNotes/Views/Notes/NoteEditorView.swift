@@ -9,6 +9,7 @@ struct NoteEditorView: View {
     @State private var showAIAssistant = false
     @State private var showExportSheet = false
     @State private var showTagInput = false
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -65,6 +66,7 @@ struct NoteEditorView: View {
                         Image(systemName: editorVM.isFavorite ? "heart.fill" : "heart")
                             .foregroundStyle(editorVM.isFavorite ? .pink : .secondary)
                     }
+                    .accessibilityLabel(editorVM.isFavorite ? "Remove from favorites" : "Add to favorites")
 
                     // Tag
                     Button {
@@ -72,6 +74,7 @@ struct NoteEditorView: View {
                     } label: {
                         Image(systemName: "tag")
                     }
+                    .accessibilityLabel("Tags")
 
                     // More menu
                     Menu {
@@ -105,13 +108,14 @@ struct NoteEditorView: View {
                         }
 
                         Button(role: .destructive) {
-                            Task { @MainActor in await viewModel.deleteNote(note, context: modelContext) }
+                            showDeleteConfirm = true
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
+                    .accessibilityLabel("More options")
                 }
             }
         }
@@ -120,6 +124,14 @@ struct NoteEditorView: View {
         }
         .sheet(isPresented: $showExportSheet) {
             ExportSheetView(note: note)
+        }
+        .alert("Delete Note", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                Task { @MainActor in await viewModel.deleteNote(note, context: modelContext) }
+            }
+        } message: {
+            Text("Are you sure you want to delete this note? This action cannot be undone.")
         }
         .onAppear {
             editorVM.load(note: note)

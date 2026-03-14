@@ -6,6 +6,8 @@ struct AIAssistantView: View {
     @State private var prompt = ""
     @State private var response = ""
     @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var lastPrompt: String?
     @State private var selectedAction: AIAction?
 
     enum AIAction: String, CaseIterable {
@@ -92,6 +94,31 @@ struct AIAssistantView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 40)
+                    } else if let error = errorMessage {
+                        VStack(spacing: 16) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: 36, weight: .ultraLight))
+                                .foregroundStyle(.orange)
+
+                            Text(error)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+
+                            if let retryPrompt = lastPrompt {
+                                Button {
+                                    generate(retryPrompt)
+                                } label: {
+                                    Label("Retry", systemImage: "arrow.clockwise")
+                                        .font(.caption.weight(.medium))
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 40)
+                        .padding(.horizontal)
                     } else if !response.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text(response)
@@ -197,11 +224,13 @@ struct AIAssistantView: View {
     private func generate(_ prompt: String) {
         isLoading = true
         response = ""
+        errorMessage = nil
+        lastPrompt = prompt
         Task {
             do {
                 response = try await GeminiService.shared.generateText(prompt: prompt)
             } catch {
-                response = "Error: \(error.localizedDescription)"
+                errorMessage = error.localizedDescription
             }
             isLoading = false
         }

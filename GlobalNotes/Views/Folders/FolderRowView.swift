@@ -7,6 +7,7 @@ struct FolderRowView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var isRenaming = false
     @State private var newName = ""
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         Button {
@@ -54,10 +55,18 @@ struct FolderRowView: View {
             }
 
             Button(role: .destructive) {
-                Task { @MainActor in await viewModel.deleteFolder(folder, context: modelContext) }
+                showDeleteConfirm = true
             } label: {
                 Label("Delete", systemImage: "trash")
             }
+        }
+        .alert("Delete Folder", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                Task { @MainActor in await viewModel.deleteFolder(folder, context: modelContext) }
+            }
+        } message: {
+            Text("Notes in this folder will be moved to the root. This action cannot be undone.")
         }
     }
 }

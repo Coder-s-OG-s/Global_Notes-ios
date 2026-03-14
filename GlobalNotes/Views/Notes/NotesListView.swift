@@ -5,6 +5,7 @@ struct NotesListView: View {
     @ObservedObject var viewModel: NotesListViewModel
     @Environment(\.modelContext) private var modelContext
     @State private var showSortPicker = false
+    @State private var noteToDelete: NoteItem?
 
     var body: some View {
         List(selection: Binding(
@@ -15,9 +16,9 @@ struct NotesListView: View {
                 NavigationLink(value: note.id) {
                     NoteRowView(note: note)
                 }
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
-                        Task { @MainActor in await viewModel.deleteNote(note, context: modelContext) }
+                        noteToDelete = note
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
@@ -55,9 +56,27 @@ struct NotesListView: View {
             await viewModel.loadData(context: modelContext)
         }
         .overlay {
-            if viewModel.filteredNotes.isEmpty && !viewModel.isLoading {
+            if viewModel.isLoading {
+                ProgressView()
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.filteredNotes.isEmpty {
                 emptyState
             }
+        }
+        .alert("Delete Note", isPresented: Binding(
+            get: { noteToDelete != nil },
+            set: { if !$0 { noteToDelete = nil } }
+        )) {
+            Button("Cancel", role: .cancel) { noteToDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let note = noteToDelete {
+                    Task { @MainActor in await viewModel.deleteNote(note, context: modelContext) }
+                }
+                noteToDelete = nil
+            }
+        } message: {
+            Text("Are you sure you want to delete this note? This action cannot be undone.")
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -185,7 +204,7 @@ struct NotesListView: View {
         Divider()
 
         Button(role: .destructive) {
-            Task { @MainActor in await viewModel.deleteNote(note, context: modelContext) }
+            noteToDelete = note
         } label: {
             Label("Delete", systemImage: "trash")
         }

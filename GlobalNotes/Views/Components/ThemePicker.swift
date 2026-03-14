@@ -45,6 +45,7 @@ struct ThemePicker: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("\(theme.name) theme\((selectedTheme ?? "default") == theme.id ? ", selected" : "")")
                 }
             }
             .padding(.horizontal)
