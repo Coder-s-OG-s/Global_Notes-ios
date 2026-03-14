@@ -107,6 +107,7 @@ struct NotesListView: View {
                         Image(systemName: "square.and.pencil")
                             .font(.title3)
                     }
+                    .keyboardShortcut("n", modifiers: .command)
                 }
             }
         }

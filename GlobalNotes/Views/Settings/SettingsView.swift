@@ -5,6 +5,8 @@ struct SettingsView: View {
     @AppStorage("preferredColorScheme") private var preferredColorScheme = 0 // 0=system, 1=light, 2=dark
     @AppStorage("autoSaveEnabled") private var autoSaveEnabled = true
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
+    @AppStorage("editorFontSize") private var editorFontSize = 16.0
+    @AppStorage("showWordCount") private var showWordCount = true
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -20,6 +22,17 @@ struct SettingsView: View {
 
                 Section("Editor") {
                     Toggle("Auto-save", isOn: $autoSaveEnabled)
+
+                    HStack {
+                        Text("Font Size")
+                        Spacer()
+                        Text("\(Int(editorFontSize))pt")
+                            .foregroundStyle(.secondary)
+                        Stepper("", value: $editorFontSize, in: 12...24, step: 1)
+                            .labelsHidden()
+                    }
+
+                    Toggle("Show Word Count", isOn: $showWordCount)
                     Toggle("Haptic Feedback", isOn: $hapticFeedbackEnabled)
                 }
 
@@ -27,21 +40,25 @@ struct SettingsView: View {
                     HStack {
                         Label("Cloud Sync", systemImage: "icloud")
                         Spacer()
-                        Text(SupabaseManager.shared.isConfigured ? "Active" : "Offline")
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(
-                                SupabaseManager.shared.isConfigured
-                                    ? Color.green.opacity(0.15)
-                                    : Color.orange.opacity(0.15),
-                                in: Capsule()
-                            )
-                            .foregroundStyle(SupabaseManager.shared.isConfigured ? .green : .orange)
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(SupabaseManager.shared.isConfigured ? .green : .orange)
+                                .frame(width: 8, height: 8)
+                            Text(SupabaseManager.shared.isConfigured ? "Active" : "Offline")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
 
                 Section("About") {
+                    HStack {
+                        Label("Version", systemImage: "info.circle")
+                        Spacer()
+                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
+                            .foregroundStyle(.secondary)
+                    }
+
                     Link(destination: URL(string: "https://github.com/Coder-s-OG-s/Global_Notes-ios")!) {
                         Label("GitHub Repository", systemImage: "link")
                     }

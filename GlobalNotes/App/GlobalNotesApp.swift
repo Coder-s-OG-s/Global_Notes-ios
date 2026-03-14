@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Supabase
 
 @main
 struct GlobalNotesApp: App {
@@ -27,8 +28,12 @@ struct GlobalNotesApp: App {
                 modelContainer = try ModelContainer(for: schema, configurations: [config])
             } catch {
                 // Last resort: in-memory only so the app doesn't crash
-                let memoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                modelContainer = try! ModelContainer(for: schema, configurations: [memoryConfig])
+                do {
+                    let memoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                    modelContainer = try ModelContainer(for: schema, configurations: [memoryConfig])
+                } catch {
+                    fatalError("Unable to create any ModelContainer: \(error)")
+                }
             }
         }
 
@@ -40,6 +45,12 @@ struct GlobalNotesApp: App {
             ContentView()
                 .environmentObject(authViewModel)
                 .modelContainer(modelContainer)
+                .onOpenURL { url in
+                    Task {
+                        try? await SupabaseManager.shared.client?.auth.session(from: url)
+                        await authViewModel.checkSession()
+                    }
+                }
                 .onChange(of: scenePhase) { _, newPhase in
                     if newPhase == .background {
                         let context = modelContainer.mainContext
