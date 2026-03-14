@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @AppStorage("preferredColorScheme") private var preferredColorScheme = 2
+    @AppStorage("preferredColorScheme") private var preferredColorScheme = 0
 
     private var colorScheme: ColorScheme? {
         switch preferredColorScheme {

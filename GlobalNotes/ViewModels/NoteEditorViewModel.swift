@@ -16,13 +16,17 @@ final class NoteEditorViewModel: ObservableObject {
 
     private var note: NoteItem?
     private var autoSaveTask: Task<Void, Never>?
-    private let syncEngine = SyncEngine()
+    private let syncEngine = SyncEngine.shared
 
     var noteId: String? { note?.id }
     var createdAt: Date? { note?.createdAt }
     var updatedAt: Date? { note?.updatedAt }
 
     func load(note: NoteItem) {
+        // Cancel any pending auto-save for the previous note
+        autoSaveTask?.cancel()
+        autoSaveTask = nil
+
         self.note = note
         self.title = note.title
         self.htmlContent = note.content
@@ -54,10 +58,14 @@ final class NoteEditorViewModel: ObservableObject {
         note.isFavorite = isFavorite
         note.isArchived = isArchived
         note.theme = theme
-        note.updatedAt = .now
 
         await syncEngine.saveNote(note, context: context)
         isSaving = false
+    }
+
+    func cancelAutoSave() {
+        autoSaveTask?.cancel()
+        autoSaveTask = nil
     }
 
     // MARK: - Tags
@@ -80,7 +88,7 @@ final class NoteEditorViewModel: ObservableObject {
     func updateCounts() {
         let plainText = htmlContent.strippingHTML
         charCount = plainText.count
-        wordCount = plainText.split(separator: " ").count
+        wordCount = plainText.split(whereSeparator: { $0.isWhitespace }).count
     }
 
     func titleChanged(context: ModelContext) {

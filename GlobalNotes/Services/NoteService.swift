@@ -64,8 +64,12 @@ final class NoteService {
                 hasExtendedColumns = true
             }
         } catch {
-            if hasExtendedColumns == nil {
-                // Retry without extended columns (schema might not have them yet)
+            // Only retry without extended columns if we haven't determined schema yet
+            // and the error looks like a schema mismatch (not a network/auth error)
+            let errorString = "\(error)"
+            let isSchemaError = errorString.contains("column") || errorString.contains("undefined") || errorString.contains("400") || errorString.contains("42703")
+
+            if hasExtendedColumns == nil && isSchemaError {
                 let fallbackDtos = notes.map { note in
                     NoteInsertDTO(
                         id: note.id,
@@ -85,9 +89,7 @@ final class NoteService {
                 do {
                     try await client.from("notes").upsert(fallbackDtos).execute()
                     hasExtendedColumns = false
-                    print("⚠️ Supabase notes table missing is_favorite/is_archived columns")
                 } catch {
-                    print("❌ Supabase upsert failed: \(error)")
                     throw error
                 }
             } else {

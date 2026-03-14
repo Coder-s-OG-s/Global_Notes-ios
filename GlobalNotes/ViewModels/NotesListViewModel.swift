@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import Combine
 
 enum LibraryFilter: String, CaseIterable {
     case all = "All Notes"
@@ -27,8 +28,9 @@ final class NotesListViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var sortOption: SortOption = .updatedNewest
     @Published var isLoading = false
+    @Published var errorMessage: String?
 
-    private let syncEngine = SyncEngine()
+    private let syncEngine = SyncEngine.shared
 
     // MARK: - Filtered & Sorted Notes
 
@@ -87,8 +89,14 @@ final class NotesListViewModel: ObservableObject {
 
     func loadData(context: ModelContext) async {
         isLoading = true
+        errorMessage = nil
+
         notes = await syncEngine.loadNotes(context: context)
         folders = await syncEngine.loadFolders(context: context)
+
+        if let error = syncEngine.lastSyncError {
+            errorMessage = error
+        }
 
         // Select first note if none selected
         if selectedNoteId == nil, let first = filteredNotes.first {
@@ -102,7 +110,7 @@ final class NotesListViewModel: ObservableObject {
 
     func createNote(context: ModelContext) async -> NoteItem {
         let note = NoteItem(
-            id: UUID().uuidString,
+            id: UUID().uuidString.lowercased(),
             title: AppConstants.defaultNoteTitle,
             folderId: selectedFolderId
         )
@@ -140,7 +148,6 @@ final class NotesListViewModel: ObservableObject {
         HapticManager.impact(.medium)
         await syncEngine.saveNote(note, context: context)
 
-        // If archiving, deselect if it was selected
         if note.isArchived && selectedNoteId == note.id {
             selectedNoteId = filteredNotes.first?.id
         }
@@ -154,7 +161,7 @@ final class NotesListViewModel: ObservableObject {
 
     func duplicateNote(_ note: NoteItem, context: ModelContext) async {
         let duplicate = NoteItem(
-            id: UUID().uuidString,
+            id: UUID().uuidString.lowercased(),
             title: "\(note.title) (Copy)",
             content: note.content,
             tags: note.tags,
@@ -174,7 +181,10 @@ final class NotesListViewModel: ObservableObject {
     // MARK: - Folders
 
     func createFolder(name: String, context: ModelContext) async {
-        let folder = FolderItem(name: name)
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        let folder = FolderItem(name: trimmed)
         context.insert(folder)
         folders.append(folder)
 
@@ -184,16 +194,20 @@ final class NotesListViewModel: ObservableObject {
     }
 
     func renameFolder(_ folder: FolderItem, newName: String, context: ModelContext) async {
-        folder.name = newName
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        folder.name = trimmed
         await syncEngine.saveFolder(folder, context: context)
     }
 
     func deleteFolder(_ folder: FolderItem, context: ModelContext) async {
         let folderId = folder.id
-        // Move notes from this folder to root
+        // Move notes from this folder to root and mark for sync
         for note in notes where note.folderId == folderId {
             note.folderId = nil
             note.updatedAt = .now
+            note.isSynced = false
         }
         folders.removeAll { $0.id == folderId }
 
@@ -204,7 +218,6 @@ final class NotesListViewModel: ObservableObject {
         HapticManager.notification(.warning)
 
         await syncEngine.deleteFolder(folder, context: context)
-        // Sync moved notes
         await syncEngine.syncPendingNotes(context: context)
     }
 

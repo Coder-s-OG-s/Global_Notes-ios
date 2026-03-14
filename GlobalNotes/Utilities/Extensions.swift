@@ -1,52 +1,87 @@
 import SwiftUI
 
+// MARK: - Date Formatters (cached)
+private let _relativeFormatter: RelativeDateTimeFormatter = {
+    let f = RelativeDateTimeFormatter()
+    f.unitsStyle = .abbreviated
+    return f
+}()
+
+private let _timeFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateFormat = "h:mm a"
+    return f
+}()
+
+private let _monthDayFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateFormat = "MMM d"
+    return f
+}()
+
+private let _fullDateFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateFormat = "MMM d, yyyy"
+    return f
+}()
+
+private let _iso8601Formatter: ISO8601DateFormatter = {
+    let f = ISO8601DateFormatter()
+    f.timeZone = TimeZone(identifier: "UTC")
+    return f
+}()
+
+private let _iso8601FractionalFormatter: ISO8601DateFormatter = {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    f.timeZone = TimeZone(identifier: "UTC")
+    return f
+}()
+
 // MARK: - Date Extensions
 extension Date {
     var relativeDisplay: String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: self, relativeTo: .now)
+        _relativeFormatter.localizedString(for: self, relativeTo: .now)
     }
 
     var shortDisplay: String {
-        let formatter = DateFormatter()
         let calendar = Calendar.current
         if calendar.isDateInToday(self) {
-            formatter.dateFormat = "h:mm a"
+            return _timeFormatter.string(from: self)
         } else if calendar.isDateInYesterday(self) {
             return "Yesterday"
         } else if calendar.isDate(self, equalTo: .now, toGranularity: .year) {
-            formatter.dateFormat = "MMM d"
+            return _monthDayFormatter.string(from: self)
         } else {
-            formatter.dateFormat = "MMM d, yyyy"
+            return _fullDateFormatter.string(from: self)
         }
-        return formatter.string(from: self)
     }
 
     var iso8601String: String {
-        ISO8601DateFormatter().string(from: self)
+        _iso8601Formatter.string(from: self)
     }
 }
 
 extension String {
     var iso8601Date: Date? {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter.date(from: self) ?? ISO8601DateFormatter().date(from: self)
+        _iso8601FractionalFormatter.date(from: self) ?? _iso8601Formatter.date(from: self)
     }
 
-    /// Strips HTML tags for plain-text preview
+    /// Strips HTML tags for plain-text preview using fast regex (no WebKit)
     var strippingHTML: String {
-        guard let data = self.data(using: .utf8) else { return self }
-        let options: [NSAttributedString.DocumentReadingOptionKey: Any] = [
-            .documentType: NSAttributedString.DocumentType.html,
-            .characterEncoding: String.Encoding.utf8.rawValue
-        ]
-        if let attributed = try? NSAttributedString(data: data, options: options, documentAttributes: nil) {
-            return attributed.string
-        }
-        // Fallback: regex strip
-        return self.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        guard !self.isEmpty else { return self }
+        var result = self.replacingOccurrences(of: "<br\\s*/?>", with: "\n", options: .regularExpression)
+        result = result.replacingOccurrences(of: "</p>", with: "\n", options: .caseInsensitive)
+        result = result.replacingOccurrences(of: "</div>", with: "\n", options: .caseInsensitive)
+        result = result.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        result = result.replacingOccurrences(of: "&amp;", with: "&")
+        result = result.replacingOccurrences(of: "&lt;", with: "<")
+        result = result.replacingOccurrences(of: "&gt;", with: ">")
+        result = result.replacingOccurrences(of: "&quot;", with: "\"")
+        result = result.replacingOccurrences(of: "&#39;", with: "'")
+        result = result.replacingOccurrences(of: "&nbsp;", with: " ")
+        result = result.replacingOccurrences(of: "\\n{3,}", with: "\n\n", options: .regularExpression)
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// Truncates to a max length with ellipsis
@@ -85,12 +120,6 @@ extension Color {
 
 // MARK: - View Extensions
 extension View {
-    func hapticFeedback(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .light) -> some View {
-        self.onTapGesture {
-            HapticManager.impact(style)
-        }
-    }
-
     @ViewBuilder
     func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
         if condition {
