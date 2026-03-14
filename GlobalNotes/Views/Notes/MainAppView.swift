@@ -46,6 +46,30 @@ struct MainAppView: View {
         .task {
             await viewModel.loadData(context: modelContext)
         }
+        .overlay(alignment: .top) {
+            if let error = viewModel.errorMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    Text(error)
+                        .font(.caption)
+                    Spacer()
+                    Button {
+                        viewModel.errorMessage = nil
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.3), value: viewModel.errorMessage)
         .sheet(isPresented: $showProfile) {
             ProfileView()
         }
@@ -61,10 +85,12 @@ struct MainAppView: View {
                 Button { showProfile = true } label: {
                     Image(systemName: "person.circle")
                 }
+                .accessibilityLabel("Profile")
                 Spacer()
                 Button { showSettings = true } label: {
                     Image(systemName: "gearshape")
                 }
+                .accessibilityLabel("Settings")
             }
         }
     }

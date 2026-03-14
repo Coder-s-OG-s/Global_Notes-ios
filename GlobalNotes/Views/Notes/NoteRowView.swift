@@ -15,6 +15,7 @@ struct NoteRowView: View {
                     Image(systemName: "heart.fill")
                         .font(.caption2)
                         .foregroundStyle(.pink)
+                        .accessibilityLabel("Favorite")
                 }
 
                 Spacer()
@@ -23,6 +24,7 @@ struct NoteRowView: View {
                     Image(systemName: "archivebox.fill")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("Archived")
                 }
             }
 

@@ -102,19 +102,23 @@ struct LoginView: View {
                                         title: "Continue with Google",
                                         iconName: "g.circle.fill",
                                         iconColor: .red,
-                                        bgColor: .white
+                                        bgColor: .white,
+                                        isLoading: authViewModel.isSigningIn
                                     ) {
                                         Task { await authViewModel.signInWithGoogle() }
                                     }
+                                    .disabled(authViewModel.isSigningIn)
 
                                     OAuthButton(
                                         title: "Continue with GitHub",
                                         iconName: "chevron.left.forwardslash.chevron.right",
                                         iconColor: .white,
-                                        bgColor: Color(white: 0.18)
+                                        bgColor: Color(white: 0.18),
+                                        isLoading: authViewModel.isSigningIn
                                     ) {
                                         Task { await authViewModel.signInWithGitHub() }
                                     }
+                                    .disabled(authViewModel.isSigningIn)
                                 }
 
                                 // Divider
@@ -206,6 +210,7 @@ struct LoginView: View {
             StyledSecureField(placeholder: "Password", text: $password, icon: "lock")
 
             Button {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 Task {
                     if isSignUp {
                         await authViewModel.signUp(email: email, password: password, username: username)
@@ -214,21 +219,29 @@ struct LoginView: View {
                     }
                 }
             } label: {
-                Text(isSignUp ? "Create Account" : "Sign In")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(
-                        LinearGradient(
-                            colors: [Color.accentColor, Color.accentColor.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        in: RoundedRectangle(cornerRadius: 14)
-                    )
-                    .shadow(color: Color.accentColor.opacity(0.3), radius: 10, y: 5)
+                HStack(spacing: 8) {
+                    if authViewModel.isSigningIn {
+                        ProgressView()
+                            .tint(.white)
+                            .controlSize(.small)
+                    }
+                    Text(authViewModel.isSigningIn ? "Signing in..." : (isSignUp ? "Create Account" : "Sign In"))
+                }
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(
+                    LinearGradient(
+                        colors: [Color.accentColor, Color.accentColor.opacity(0.8)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    in: RoundedRectangle(cornerRadius: 14)
+                )
+                .shadow(color: Color.accentColor.opacity(0.3), radius: 10, y: 5)
             }
+            .disabled(authViewModel.isSigningIn)
 
             HStack(spacing: 4) {
                 Text(isSignUp ? "Already have an account?" : "Don't have an account?")
@@ -324,6 +337,7 @@ struct OAuthButton: View {
     let iconName: String
     let iconColor: Color
     let bgColor: Color
+    var isLoading: Bool = false
     let action: () -> Void
 
     var body: some View {
@@ -339,13 +353,19 @@ struct OAuthButton: View {
 
                 Spacer()
 
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(bgColor == .white ? .black.opacity(0.3) : .white.opacity(0.3))
+                if isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(bgColor == .white ? .black : .white)
+                } else {
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(bgColor == .white ? .black.opacity(0.3) : .white.opacity(0.3))
+                }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
-            .background(bgColor, in: RoundedRectangle(cornerRadius: 14))
+            .background(bgColor.opacity(isLoading ? 0.7 : 1), in: RoundedRectangle(cornerRadius: 14))
             .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
         }
         .buttonStyle(.plain)

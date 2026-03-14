@@ -5,10 +5,15 @@ import Supabase
 final class ProfileViewModel: ObservableObject {
     @Published var profile: UserProfile?
     @Published var isLoading = false
+    @Published var errorMessage: String?
 
     func loadProfile() async {
-        guard let client = SupabaseManager.shared.client else { return }
+        guard let client = SupabaseManager.shared.client else {
+            errorMessage = "Not connected to cloud"
+            return
+        }
         isLoading = true
+        errorMessage = nil
 
         do {
             let user = try await client.auth.session.user
@@ -28,7 +33,7 @@ final class ProfileViewModel: ObservableObject {
                 joined: nil
             )
         } catch {
-            print("Profile load error: \(error.localizedDescription)")
+            errorMessage = "Failed to load profile"
         }
 
         isLoading = false
