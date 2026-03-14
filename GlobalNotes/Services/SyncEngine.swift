@@ -220,7 +220,7 @@ final class SyncEngine: ObservableObject {
             do {
                 cloudFolders = try await folderService.fetchFolders()
             } catch {
-                print("Cloud folder fetch failed: \(error.localizedDescription)")
+                lastSyncError = error.localizedDescription
             }
         }
 
@@ -293,7 +293,7 @@ final class SyncEngine: ObservableObject {
                 folder.isSynced = true
                 try? context.save()
             } catch {
-                print("Cloud folder sync failed: \(error.localizedDescription)")
+                lastSyncError = error.localizedDescription
             }
         }
     }
@@ -308,7 +308,7 @@ final class SyncEngine: ObservableObject {
             do {
                 try await folderService.deleteFolder(id: folderId)
             } catch {
-                print("Cloud folder delete failed: \(error.localizedDescription)")
+                lastSyncError = error.localizedDescription
             }
         }
     }
@@ -327,7 +327,7 @@ final class SyncEngine: ObservableObject {
                 try await folderService.upsertFolder(folder)
                 folder.isSynced = true
             } catch {
-                print("Folder sync failed for \(folder.id): \(error.localizedDescription)")
+                lastSyncError = error.localizedDescription
             }
         }
         try? context.save()

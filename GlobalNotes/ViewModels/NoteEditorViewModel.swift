@@ -72,7 +72,9 @@ final class NoteEditorViewModel: ObservableObject {
 
     func addTag(_ tag: String, context: ModelContext) {
         let trimmed = tag.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, !tags.contains(trimmed) else { return }
+        guard !trimmed.isEmpty,
+              !tags.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame })
+        else { return }
         tags.append(trimmed)
         HapticManager.impact(.light)
         scheduleAutoSave(context: context)

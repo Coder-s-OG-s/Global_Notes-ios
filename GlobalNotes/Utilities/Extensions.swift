@@ -9,19 +9,20 @@ private let _relativeFormatter: RelativeDateTimeFormatter = {
 
 private let _timeFormatter: DateFormatter = {
     let f = DateFormatter()
-    f.dateFormat = "h:mm a"
+    f.timeStyle = .short
+    f.dateStyle = .none
     return f
 }()
 
 private let _monthDayFormatter: DateFormatter = {
     let f = DateFormatter()
-    f.dateFormat = "MMM d"
+    f.setLocalizedDateFormatFromTemplate("MMM d")
     return f
 }()
 
 private let _fullDateFormatter: DateFormatter = {
     let f = DateFormatter()
-    f.dateFormat = "MMM d, yyyy"
+    f.setLocalizedDateFormatFromTemplate("MMM d yyyy")
     return f
 }()
 

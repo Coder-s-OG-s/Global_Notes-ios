@@ -84,22 +84,37 @@ enum ExportService {
 
     // MARK: - JSON (for backup/import)
 
+    struct NoteExport: Encodable {
+        let id: String
+        let title: String
+        let content: String
+        let tags: [String]
+        let folderId: String?
+        let theme: String?
+        let isFavorite: Bool
+        let isArchived: Bool
+        let createdAt: String
+        let updatedAt: String
+    }
+
     static func toJSON(_ notes: [NoteItem]) -> Data? {
         let exportNotes = notes.map { note in
-            [
-                "id": note.id,
-                "title": note.title,
-                "content": note.content,
-                "tags": note.tags.joined(separator: ","),
-                "folderId": note.folderId ?? "",
-                "theme": note.theme ?? "",
-                "isFavorite": note.isFavorite ? "true" : "false",
-                "isArchived": note.isArchived ? "true" : "false",
-                "createdAt": note.createdAt.iso8601String,
-                "updatedAt": note.updatedAt.iso8601String
-            ]
+            NoteExport(
+                id: note.id,
+                title: note.title,
+                content: note.content,
+                tags: note.tags,
+                folderId: note.folderId,
+                theme: note.theme,
+                isFavorite: note.isFavorite,
+                isArchived: note.isArchived,
+                createdAt: note.createdAt.iso8601String,
+                updatedAt: note.updatedAt.iso8601String
+            )
         }
 
-        return try? JSONSerialization.data(withJSONObject: exportNotes, options: .prettyPrinted)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        return try? encoder.encode(exportNotes)
     }
 }

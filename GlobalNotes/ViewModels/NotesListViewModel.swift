@@ -53,8 +53,9 @@ final class NotesListViewModel: ObservableObject {
         }
 
         // Search
-        if !searchText.isEmpty {
-            let query = searchText.lowercased()
+        let trimmedSearch = searchText.trimmingCharacters(in: .whitespaces)
+        if !trimmedSearch.isEmpty {
+            let query = trimmedSearch.lowercased()
             result = result.filter { note in
                 note.title.lowercased().contains(query) ||
                 note.content.strippingHTML.lowercased().contains(query) ||

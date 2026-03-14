@@ -38,6 +38,13 @@ struct NoteRowView: View {
 
             // Bottom row: date + tags
             HStack(spacing: 8) {
+                if !note.isSynced {
+                    Circle()
+                        .fill(.orange)
+                        .frame(width: 6, height: 6)
+                        .accessibilityLabel("Not synced")
+                }
+
                 Text(note.updatedAt.shortDisplay)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)

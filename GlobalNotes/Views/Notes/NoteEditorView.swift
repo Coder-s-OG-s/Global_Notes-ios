@@ -10,6 +10,7 @@ struct NoteEditorView: View {
     @State private var showExportSheet = false
     @State private var showTagInput = false
     @State private var showDeleteConfirm = false
+    @AppStorage("showWordCount") private var showWordCount = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -161,13 +162,15 @@ struct NoteEditorView: View {
 
             Spacer()
 
-            Text("\(editorVM.wordCount) words")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            if showWordCount {
+                Text("\(editorVM.wordCount) words")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
 
-            Text("\(editorVM.charCount) chars")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+                Text("\(editorVM.charCount) chars")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
@@ -203,6 +206,12 @@ struct ExportSheetView: View {
                 } label: {
                     Label("PDF (.pdf)", systemImage: "doc.richtext")
                 }
+
+                Button {
+                    printNote()
+                } label: {
+                    Label("Print", systemImage: "printer")
+                }
             }
             .navigationTitle("Export Note")
             .navigationBarTitleDisplayMode(.inline)
@@ -225,6 +234,17 @@ struct ExportSheetView: View {
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         try? data.write(to: tempURL)
         share(items: [tempURL])
+    }
+
+    private func printNote() {
+        let printController = UIPrintInteractionController.shared
+        let printInfo = UIPrintInfo(dictionary: nil)
+        printInfo.jobName = note.title
+        printInfo.outputType = .general
+        printController.printInfo = printInfo
+        printController.printFormatter = UIMarkupTextPrintFormatter(markupText: note.content)
+        printController.present(animated: true)
+        dismiss()
     }
 
     private func share(items: [Any]) {

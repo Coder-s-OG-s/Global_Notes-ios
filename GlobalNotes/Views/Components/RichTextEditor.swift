@@ -5,6 +5,7 @@ import UIKit
 struct RichTextEditor: UIViewRepresentable {
     @Binding var htmlContent: String
     var onContentChange: () -> Void
+    @AppStorage("editorFontSize") private var editorFontSize = 16.0
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -13,7 +14,7 @@ struct RichTextEditor: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
         textView.delegate = context.coordinator
-        textView.font = .systemFont(ofSize: 16)
+        textView.font = .systemFont(ofSize: editorFontSize)
         textView.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         textView.backgroundColor = .clear
         textView.isScrollEnabled = true
