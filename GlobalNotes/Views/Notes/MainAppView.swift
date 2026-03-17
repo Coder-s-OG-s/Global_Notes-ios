@@ -172,6 +172,9 @@ struct SidebarView: View {
 
 struct SidebarWithListView: View {
     @ObservedObject var viewModel: NotesListViewModel
+    @Environment(\.modelContext) private var modelContext
+    @State private var showNewFolderAlert = false
+    @State private var newFolderName = ""
 
     var body: some View {
         NotesListView(viewModel: viewModel)
@@ -188,8 +191,8 @@ struct SidebarWithListView: View {
                             }
                         }
 
-                        if !viewModel.folders.isEmpty {
-                            Section("Folders") {
+                        Section("Folders") {
+                            if !viewModel.folders.isEmpty {
                                 Button {
                                     viewModel.selectFolder(nil)
                                 } label: {
@@ -203,11 +206,28 @@ struct SidebarWithListView: View {
                                     }
                                 }
                             }
+
+                            Button {
+                                showNewFolderAlert = true
+                            } label: {
+                                Label("New Folder", systemImage: "folder.badge.plus")
+                            }
                         }
                     } label: {
                         Image(systemName: "line.3.horizontal")
                             .font(.title3)
                     }
+                }
+            }
+            .alert("New Folder", isPresented: $showNewFolderAlert) {
+                TextField("Folder name", text: $newFolderName)
+                Button("Cancel", role: .cancel) { newFolderName = "" }
+                Button("Create") {
+                    let name = newFolderName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !name.isEmpty {
+                        Task { @MainActor in await viewModel.createFolder(name: name, context: modelContext) }
+                    }
+                    newFolderName = ""
                 }
             }
     }

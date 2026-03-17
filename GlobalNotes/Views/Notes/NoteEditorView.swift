@@ -10,6 +10,7 @@ struct NoteEditorView: View {
     @State private var showExportSheet = false
     @State private var showTagInput = false
     @State private var showDeleteConfirm = false
+    @State private var showThemePicker = false
     @AppStorage("showWordCount") private var showWordCount = true
 
     var body: some View {
@@ -97,6 +98,12 @@ struct NoteEditorView: View {
                             Label("Duplicate", systemImage: "doc.on.doc")
                         }
 
+                        Button {
+                            showThemePicker = true
+                        } label: {
+                            Label("Note Theme", systemImage: "paintpalette")
+                        }
+
                         Divider()
 
                         Button {
@@ -125,6 +132,31 @@ struct NoteEditorView: View {
         }
         .sheet(isPresented: $showExportSheet) {
             ExportSheetView(note: note)
+        }
+        .sheet(isPresented: $showThemePicker) {
+            NavigationStack {
+                VStack(spacing: 20) {
+                    Text("Choose a theme for this note")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.top)
+
+                    ThemePicker(selectedTheme: $editorVM.theme)
+
+                    Spacer()
+                }
+                .navigationTitle("Note Theme")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Done") {
+                            showThemePicker = false
+                            editorVM.scheduleAutoSave(context: modelContext)
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.height(220)])
         }
         .alert("Delete Note", isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) {}
@@ -253,7 +285,9 @@ struct ExportSheetView: View {
               let rootVC = window.rootViewController else { return }
         let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
         activityVC.popoverPresentationController?.sourceView = rootVC.view
+        activityVC.completionWithItemsHandler = { _, _, _, _ in
+            dismiss()
+        }
         rootVC.present(activityVC, animated: true)
-        dismiss()
     }
 }

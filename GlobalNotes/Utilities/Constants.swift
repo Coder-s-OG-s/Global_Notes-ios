@@ -9,7 +9,7 @@ enum AppConstants {
 
     // MARK: - Gemini AI
     static let geminiAPIKey = Config.geminiAPIKey
-    static let geminiModel = "gemma-3-4b-it"
+    static let geminiModel = "gemini-2.0-flash"
     static let geminiBaseURL = "https://generativelanguage.googleapis.com/v1beta/models"
 
     // MARK: - OAuth
