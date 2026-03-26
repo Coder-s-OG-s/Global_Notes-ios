@@ -12,7 +12,8 @@ struct GlobalNotesApp: App {
     init() {
         let schema = Schema([
             NoteItem.self,
-            FolderItem.self
+            FolderItem.self,
+            CodeSnippetItem.self
         ])
 
         do {

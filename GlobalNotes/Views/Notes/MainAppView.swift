@@ -8,6 +8,9 @@ struct MainAppView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var showProfile = false
     @State private var showSettings = false
+    @State private var showCodeWorkspace = false
+    @State private var showMailGenerator = false
+    @State private var showCalendar = false
 
     var body: some View {
         Group {
@@ -30,7 +33,7 @@ struct MainAppView: View {
             } else {
                 // iPhone: stacked navigation
                 NavigationSplitView {
-                    SidebarWithListView(viewModel: viewModel)
+                    SidebarWithListView(viewModel: viewModel, showCodeWorkspace: $showCodeWorkspace, showMailGenerator: $showMailGenerator, showCalendar: $showCalendar)
                         .toolbar {
                             sidebarToolbar
                         }
@@ -76,6 +79,15 @@ struct MainAppView: View {
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
+        .fullScreenCover(isPresented: $showCodeWorkspace) {
+            CodeWorkspaceView()
+        }
+        .sheet(isPresented: $showMailGenerator) {
+            MailGeneratorView()
+        }
+        .sheet(isPresented: $showCalendar) {
+            SmartCalendarView(notes: viewModel.notes)
+        }
     }
 
     @ToolbarContentBuilder
@@ -86,7 +98,26 @@ struct MainAppView: View {
                     Image(systemName: "person.circle")
                 }
                 .accessibilityLabel("Profile")
+
                 Spacer()
+
+                Menu {
+                    Button { showCodeWorkspace = true } label: {
+                        Label("Code Workspace", systemImage: "chevron.left.forwardslash.chevron.right")
+                    }
+                    Button { showMailGenerator = true } label: {
+                        Label("Mail Generator", systemImage: "envelope")
+                    }
+                    Button { showCalendar = true } label: {
+                        Label("Calendar", systemImage: "calendar")
+                    }
+                } label: {
+                    Image(systemName: "square.grid.2x2")
+                }
+                .accessibilityLabel("Tools")
+
+                Spacer()
+
                 Button { showSettings = true } label: {
                     Image(systemName: "gearshape")
                 }
@@ -172,6 +203,9 @@ struct SidebarView: View {
 
 struct SidebarWithListView: View {
     @ObservedObject var viewModel: NotesListViewModel
+    @Binding var showCodeWorkspace: Bool
+    @Binding var showMailGenerator: Bool
+    @Binding var showCalendar: Bool
     @Environment(\.modelContext) private var modelContext
     @State private var showNewFolderAlert = false
     @State private var newFolderName = ""
@@ -188,6 +222,18 @@ struct SidebarWithListView: View {
                                 } label: {
                                     Label(filter.rawValue, systemImage: iconForFilter(filter))
                                 }
+                            }
+                        }
+
+                        Section("Tools") {
+                            Button { showCodeWorkspace = true } label: {
+                                Label("Code Workspace", systemImage: "chevron.left.forwardslash.chevron.right")
+                            }
+                            Button { showMailGenerator = true } label: {
+                                Label("Mail Generator", systemImage: "envelope")
+                            }
+                            Button { showCalendar = true } label: {
+                                Label("Calendar", systemImage: "calendar")
                             }
                         }
 

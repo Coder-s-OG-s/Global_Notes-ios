@@ -18,6 +18,10 @@ struct SettingsView: View {
                         Text("Light").tag(1)
                         Text("Dark").tag(2)
                     }
+
+                    NavigationLink("App Theme") {
+                        AppThemeView()
+                    }
                 }
 
                 Section("Editor") {
