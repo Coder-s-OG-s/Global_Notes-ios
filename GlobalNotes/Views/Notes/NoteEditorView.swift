@@ -11,6 +11,13 @@ struct NoteEditorView: View {
     @State private var showTagInput = false
     @State private var showDeleteConfirm = false
     @State private var showThemePicker = false
+    @State private var showMediaPicker = false
+    @State private var showFilePicker = false
+    @State private var showSketchPad = false
+    @State private var showAudioRecorder = false
+    @State private var showTableInsertion = false
+    @State private var showShapesPicker = false
+    @State private var showShareSheet = false
     @AppStorage("showWordCount") private var showWordCount = true
 
     var body: some View {
@@ -78,6 +85,23 @@ struct NoteEditorView: View {
                     }
                     .accessibilityLabel("Tags")
 
+                    // Share
+                    Button { showShareSheet = true } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+
+                    // Insert menu
+                    Menu {
+                        Button { showMediaPicker = true } label: { Label("Image", systemImage: "photo") }
+                        Button { showFilePicker = true } label: { Label("File", systemImage: "doc") }
+                        Button { showSketchPad = true } label: { Label("Sketch", systemImage: "pencil.tip.crop.circle") }
+                        Button { showAudioRecorder = true } label: { Label("Audio", systemImage: "mic") }
+                        Button { showTableInsertion = true } label: { Label("Table", systemImage: "tablecells") }
+                        Button { showShapesPicker = true } label: { Label("Shape", systemImage: "square.on.circle") }
+                    } label: {
+                        Image(systemName: "plus.circle")
+                    }
+
                     // More menu
                     Menu {
                         Button {
@@ -89,7 +113,7 @@ struct NoteEditorView: View {
                         Button {
                             showExportSheet = true
                         } label: {
-                            Label("Export", systemImage: "square.and.arrow.up")
+                            Label("Export", systemImage: "arrow.up.doc")
                         }
 
                         Button {
@@ -157,6 +181,51 @@ struct NoteEditorView: View {
                 }
             }
             .presentationDetents([.height(220)])
+        }
+        .sheet(isPresented: $showMediaPicker) {
+            MediaPickerView { image in
+                if let html = AttachmentService.imageToHTML(image) {
+                    editorVM.htmlContent += html
+                    editorVM.contentChanged(context: modelContext)
+                }
+            }
+        }
+        .sheet(isPresented: $showFilePicker) {
+            FilePickerView { url, filename in
+                editorVM.htmlContent += AttachmentService.fileToHTML(filename: filename)
+                editorVM.contentChanged(context: modelContext)
+            }
+        }
+        .sheet(isPresented: $showSketchPad) {
+            SketchPadView { image in
+                if let html = AttachmentService.imageToHTML(image) {
+                    editorVM.htmlContent += html
+                    editorVM.contentChanged(context: modelContext)
+                }
+            }
+        }
+        .sheet(isPresented: $showAudioRecorder) {
+            AudioRecorderView { html in
+                editorVM.htmlContent += html
+                editorVM.contentChanged(context: modelContext)
+            }
+        }
+        .sheet(isPresented: $showTableInsertion) {
+            TableInsertionView { html in
+                editorVM.htmlContent += html
+                editorVM.contentChanged(context: modelContext)
+            }
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showShapesPicker) {
+            ShapesPickerView { html in
+                editorVM.htmlContent += html
+                editorVM.contentChanged(context: modelContext)
+            }
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showShareSheet) {
+            ShareNoteView(title: editorVM.title, content: editorVM.htmlContent)
         }
         .alert("Delete Note", isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) {}
