@@ -59,7 +59,10 @@ struct FormattingToolbar: View {
     private func applyFormatting(_ type: FormatType) {
         guard let textView = findFirstResponderTextView() else { return }
         let range = textView.selectedRange
-        guard range.length > 0 else { return }
+        guard range.length > 0 else {
+            HapticManager.notification(.warning)
+            return
+        }
 
         let mutableAttr = NSMutableAttributedString(attributedString: textView.attributedText)
 
@@ -154,8 +157,8 @@ struct FormatButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .medium))
-                .frame(width: 36, height: 32)
+                .font(.system(size: 15, weight: .medium))
+                .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

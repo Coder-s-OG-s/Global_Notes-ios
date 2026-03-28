@@ -68,6 +68,7 @@ struct MailGeneratorView: View {
                     }
                 }
             }
+            .disabled(viewModel.isGenerating)
             .navigationTitle("Mail Generator")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

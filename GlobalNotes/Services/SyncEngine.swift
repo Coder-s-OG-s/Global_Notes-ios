@@ -72,14 +72,12 @@ final class SyncEngine: ObservableObject {
 
         // 5. Merge: newer wins by updatedAt, preserve local-only and cloud-only
         var mergedNotes: [NoteItem] = []
-        var cloudOnlyIds: Set<String> = Set(cloudMap.keys)
 
         for id in allIds {
             let cloudNote = cloudMap[id]
             let localNote = localMap[id]
 
             if let cloud = cloudNote, let local = localNote {
-                cloudOnlyIds.remove(id)
                 // Both exist — newer wins
                 if cloud.updatedAt > local.updatedAt {
                     // Update local with cloud data
@@ -105,7 +103,6 @@ final class SyncEngine: ObservableObject {
                 // Local only — keep it, may need sync
                 mergedNotes.append(local)
             } else if let cloud = cloudNote {
-                cloudOnlyIds.remove(id)
                 // Cloud only — insert into SwiftData
                 let item = NoteItem(
                     id: cloud.id,
@@ -137,7 +134,7 @@ final class SyncEngine: ObservableObject {
             }
         }
 
-        try? context.save()
+        do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
 
         // 7. Sync unsynced local notes to cloud
         await syncPendingNotes(context: context)
@@ -149,14 +146,14 @@ final class SyncEngine: ObservableObject {
     func saveNote(_ note: NoteItem, context: ModelContext) async {
         note.updatedAt = .now
         note.isSynced = false
-        try? context.save()
+        do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
 
         // Sync to cloud in background
         if await authService.getCurrentSession() != nil {
             do {
                 try await noteService.upsertNote(note)
                 note.isSynced = true
-                try? context.save()
+                do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
             } catch {
                 lastSyncError = error.localizedDescription
                 print("Cloud sync failed for note \(note.id): \(error.localizedDescription)")
@@ -168,7 +165,7 @@ final class SyncEngine: ObservableObject {
     func deleteNote(_ note: NoteItem, context: ModelContext) async {
         let noteId = note.id
         context.delete(note)
-        try? context.save()
+        do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
 
         // Delete from cloud
         if await authService.getCurrentSession() != nil {
@@ -195,7 +192,7 @@ final class SyncEngine: ObservableObject {
             for note in unsyncedNotes {
                 note.isSynced = true
             }
-            try? context.save()
+            do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
         } catch {
             lastSyncError = error.localizedDescription
             print("Batch sync failed: \(error.localizedDescription)")
@@ -274,7 +271,7 @@ final class SyncEngine: ObservableObject {
             }
         }
 
-        try? context.save()
+        do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
 
         // Sync unsynced folders
         await syncPendingFolders(context: context)
@@ -285,13 +282,13 @@ final class SyncEngine: ObservableObject {
     /// Save folder locally and sync to cloud
     func saveFolder(_ folder: FolderItem, context: ModelContext) async {
         folder.isSynced = false
-        try? context.save()
+        do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
 
         if await authService.getCurrentSession() != nil {
             do {
                 try await folderService.upsertFolder(folder)
                 folder.isSynced = true
-                try? context.save()
+                do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
             } catch {
                 lastSyncError = error.localizedDescription
             }
@@ -302,7 +299,7 @@ final class SyncEngine: ObservableObject {
     func deleteFolder(_ folder: FolderItem, context: ModelContext) async {
         let folderId = folder.id
         context.delete(folder)
-        try? context.save()
+        do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
 
         if await authService.getCurrentSession() != nil {
             do {
@@ -330,6 +327,6 @@ final class SyncEngine: ObservableObject {
                 lastSyncError = error.localizedDescription
             }
         }
-        try? context.save()
+        do { try context.save() } catch { print("SwiftData save error: \(error.localizedDescription)") }
     }
 }

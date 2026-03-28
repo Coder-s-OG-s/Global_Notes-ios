@@ -53,7 +53,7 @@ struct CodeWorkspaceView: View {
                     }
                     .listStyle(.plain)
                 }
-                .frame(width: 200)
+                .frame(minWidth: 160, idealWidth: 200, maxWidth: 260)
 
                 Divider()
 
@@ -133,12 +133,14 @@ struct CodeWorkspaceView: View {
                                     Image(systemName: viewModel.isGenerating ? "hourglass" : "paperplane.fill")
                                 }
                                 .disabled(viewModel.userInput.trimmingCharacters(in: .whitespaces).isEmpty || viewModel.isGenerating)
+                                .accessibilityLabel("Send message")
 
                                 Button {
                                     showAIAssistant = true
                                 } label: {
                                     Image(systemName: "sparkles")
                                 }
+                                .accessibilityLabel("AI Assistant")
                             }
                             .padding(.horizontal)
                             .padding(.bottom, 8)

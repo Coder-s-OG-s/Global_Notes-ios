@@ -89,6 +89,7 @@ struct NoteEditorView: View {
                     Button { showShareSheet = true } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
+                    .accessibilityLabel("Share note")
 
                     // Insert menu
                     Menu {
@@ -101,6 +102,7 @@ struct NoteEditorView: View {
                     } label: {
                         Image(systemName: "plus.circle")
                     }
+                    .accessibilityLabel("Insert content")
 
                     // More menu
                     Menu {
@@ -241,6 +243,11 @@ struct NoteEditorView: View {
         .onChange(of: note.id) {
             editorVM.load(note: note)
         }
+        .keyboardShortcut("s", modifiers: .command)
+        .onKeyPress(.init("s"), phases: .down) { _ in
+            Task { await editorVM.save(context: modelContext) }
+            return .handled
+        }
     }
 
     // MARK: - Editor Toolbar
@@ -327,14 +334,22 @@ struct ExportSheetView: View {
 
     private func shareText(_ text: String, filename: String) {
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        try? text.write(to: tempURL, atomically: true, encoding: .utf8)
-        share(items: [tempURL])
+        do {
+            try text.write(to: tempURL, atomically: true, encoding: .utf8)
+            share(items: [tempURL])
+        } catch {
+            print("Export error: \(error.localizedDescription)")
+        }
     }
 
     private func shareData(_ data: Data, filename: String, mimeType: String) {
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        try? data.write(to: tempURL)
-        share(items: [tempURL])
+        do {
+            try data.write(to: tempURL)
+            share(items: [tempURL])
+        } catch {
+            print("Export error: \(error.localizedDescription)")
+        }
     }
 
     private func printNote() {
@@ -349,8 +364,10 @@ struct ExportSheetView: View {
     }
 
     private func share(items: [Any]) {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = scene.windows.first,
+        guard let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }),
+              let window = scene.windows.first(where: { $0.isKeyWindow }),
               let rootVC = window.rootViewController else { return }
         let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
         activityVC.popoverPresentationController?.sourceView = rootVC.view

@@ -63,8 +63,10 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Link(destination: URL(string: "https://github.com/Coder-s-OG-s/Global_Notes-ios")!) {
-                        Label("GitHub Repository", systemImage: "link")
+                    if let url = URL(string: "https://github.com/Coder-s-OG-s/Global_Notes-ios") {
+                        Link(destination: url) {
+                            Label("GitHub Repository", systemImage: "link")
+                        }
                     }
                 }
             }

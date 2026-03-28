@@ -51,6 +51,10 @@ final class AuthViewModel: ObservableObject {
             errorMessage = "Please enter both email and password."
             return
         }
+        guard email.contains("@"), email.contains(".") else {
+            errorMessage = "Please enter a valid email address."
+            return
+        }
 
         errorMessage = nil
         isSigningIn = true
@@ -68,6 +72,10 @@ final class AuthViewModel: ObservableObject {
     func signUp(email: String, password: String, username: String) async {
         guard !email.isEmpty, !password.isEmpty else {
             errorMessage = "Please enter both email and password."
+            return
+        }
+        guard email.contains("@"), email.contains(".") else {
+            errorMessage = "Please enter a valid email address."
             return
         }
         guard password.count >= 6 else {

@@ -64,6 +64,8 @@ struct TagChip: View {
                 Button(action: onRemove) {
                     Image(systemName: "xmark")
                         .font(.system(size: 8, weight: .bold))
+                        .frame(width: 22, height: 22)
+                        .contentShape(Circle())
                 }
                 .accessibilityLabel("Remove \(tag)")
             }

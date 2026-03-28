@@ -16,6 +16,8 @@ struct GlobalNotesApp: App {
             CodeSnippetItem.self
         ])
 
+        // Migration plan: when schema changes, SwiftData auto-migrates lightweight changes.
+        // For breaking changes, add a SchemaMigrationPlan here.
         do {
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             modelContainer = try ModelContainer(for: schema, configurations: [config])

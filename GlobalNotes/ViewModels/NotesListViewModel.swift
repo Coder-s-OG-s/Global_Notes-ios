@@ -31,10 +31,23 @@ final class NotesListViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let syncEngine = SyncEngine.shared
+    private var _cachedFilteredNotes: [NoteItem]?
+    private var _lastFilterKey: String?
 
     // MARK: - Filtered & Sorted Notes
 
     var filteredNotes: [NoteItem] {
+        let key = "\(libraryFilter.rawValue)-\(selectedFolderId ?? "")-\(searchText)-\(sortOption.rawValue)-\(notes.count)"
+        if let cached = _cachedFilteredNotes, key == _lastFilterKey {
+            return cached
+        }
+        let result = computeFilteredNotes()
+        _cachedFilteredNotes = result
+        _lastFilterKey = key
+        return result
+    }
+
+    private func computeFilteredNotes() -> [NoteItem] {
         var result = notes
 
         // Library filter
@@ -233,6 +246,11 @@ final class NotesListViewModel: ObservableObject {
     func selectLibraryFilter(_ filter: LibraryFilter) {
         libraryFilter = filter
         selectedFolderId = nil
+        _cachedFilteredNotes = nil
         HapticManager.selection()
+    }
+
+    private func invalidateCache() {
+        _cachedFilteredNotes = nil
     }
 }

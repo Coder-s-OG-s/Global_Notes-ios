@@ -1,10 +1,14 @@
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var profileVM = ProfileViewModel()
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var showSignOutConfirm = false
+    @State private var totalNotes = 0
+    @State private var totalWords = 0
 
     var body: some View {
         NavigationStack {
@@ -45,6 +49,18 @@ struct ProfileView: View {
 
                 // Stats
                 Section("Notes") {
+                    HStack {
+                        Label("Total Notes", systemImage: "doc.text")
+                        Spacer()
+                        Text("\(totalNotes)")
+                            .foregroundStyle(.secondary)
+                    }
+                    HStack {
+                        Label("Total Words", systemImage: "textformat.abc")
+                        Spacer()
+                        Text("\(totalWords)")
+                            .foregroundStyle(.secondary)
+                    }
                     HStack {
                         Label("Sync Status", systemImage: "arrow.triangle.2.circlepath")
                         Spacer()
@@ -98,10 +114,21 @@ struct ProfileView: View {
             .overlay {
                 if profileVM.isLoading {
                     ProgressView()
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.ultraThinMaterial)
                 }
             }
             .task {
                 await profileVM.loadProfile()
+                // Calculate stats
+                let descriptor = FetchDescriptor<NoteItem>()
+                if let notes = try? modelContext.fetch(descriptor) {
+                    totalNotes = notes.count
+                    totalWords = notes.reduce(0) { sum, note in
+                        sum + note.content.strippingHTML.split(whereSeparator: { $0.isWhitespace }).count
+                    }
+                }
             }
         }
     }

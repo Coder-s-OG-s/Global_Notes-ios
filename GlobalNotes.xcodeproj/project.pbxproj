@@ -44,6 +44,7 @@
 		EBF7C1CA96F3317605FC8B3B /* NoteRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2216CF1F79E16680520388 /* NoteRowView.swift */; };
 		F0214A41303B62088BCDE0A8 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B08C09D5AA1588C89FEEB2F5 /* LoginView.swift */; };
 		FBFDC920D88B9AFD4E500052 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC659F70936C78D7AE5C32F /* HapticManager.swift */; };
+		A1B2C3D4E5F60718 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60719 /* NetworkMonitor.swift */; };
 		FF97916DB33F47C1566C650B /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F9603A7C5A36BC01F15401 /* NoteEditorView.swift */; };
 		34CCBD4349D23CB8302B31A2 /* AppThemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0CCC9DB17959F735575EB0E /* AppThemeView.swift */; };
 		B3EE344EB709CC8453743B2C /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C975179C4D6737450967D6AE /* AppTheme.swift */; };
@@ -100,6 +101,7 @@
 		0C11692D7E5CBC2E025C539B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		1C8667C615A5DB1729C201AF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		2BC659F70936C78D7AE5C32F /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60719 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		3271194C2AF9AAD9BEE1CF2A /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		3D01E338E23A0DDB7D1AED44 /* ThemePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePicker.swift; sourceTree = "<group>"; };
 		45F8B1BEA33BAC7B19B1EF10 /* AIAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantView.swift; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 				83C8FBFB3582AF9BEFB8D086 /* Constants.swift */,
 				D27BFEDBBC15F50570704221 /* Extensions.swift */,
 				2BC659F70936C78D7AE5C32F /* HapticManager.swift */,
+				A1B2C3D4E5F60719 /* NetworkMonitor.swift */,
 				40D81E44948CD21C22F34581 /* LanguageMap.swift */,
 			);
 			path = Utilities;
@@ -552,6 +555,7 @@
 				6BBB60CCC83FCD4C9CD3CA92 /* GlobalNotesApp.swift in Sources */,
 				AA38E0CBC1416A589276BFFB /* HTMLConverter.swift in Sources */,
 				FBFDC920D88B9AFD4E500052 /* HapticManager.swift in Sources */,
+				A1B2C3D4E5F60718 /* NetworkMonitor.swift in Sources */,
 				EF42982E7EBBE95DC6040FEF /* LanguageMap.swift in Sources */,
 				F0214A41303B62088BCDE0A8 /* LoginView.swift in Sources */,
 				7ABE07177F247A8489030CDB /* MailGeneratorView.swift in Sources */,
