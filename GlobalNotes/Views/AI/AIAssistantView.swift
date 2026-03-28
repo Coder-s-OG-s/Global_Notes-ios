@@ -128,7 +128,11 @@ struct AIAssistantView: View {
 
                             HStack {
                                 Button {
-                                    editorVM.htmlContent = response
+                                    let htmlResponse = response.components(separatedBy: "\n")
+                                        .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                                        .map { "<p>\($0)</p>" }
+                                        .joined()
+                                    editorVM.htmlContent = htmlResponse
                                     HapticManager.notification(.success)
                                     dismiss()
                                 } label: {
@@ -139,7 +143,11 @@ struct AIAssistantView: View {
                                 .controlSize(.small)
 
                                 Button {
-                                    editorVM.htmlContent += "\n\n" + response
+                                    let htmlResponse = response.components(separatedBy: "\n")
+                                        .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                                        .map { "<p>\($0)</p>" }
+                                        .joined()
+                                    editorVM.htmlContent += htmlResponse
                                     HapticManager.notification(.success)
                                     dismiss()
                                 } label: {

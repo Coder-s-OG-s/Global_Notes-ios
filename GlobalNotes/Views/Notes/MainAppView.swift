@@ -11,6 +11,7 @@ struct MainAppView: View {
     @State private var showCodeWorkspace = false
     @State private var showMailGenerator = false
     @State private var showCalendar = false
+    @StateObject private var networkMonitor = NetworkMonitor.shared
 
     var body: some View {
         Group {
@@ -73,6 +74,23 @@ struct MainAppView: View {
             }
         }
         .animation(.spring(response: 0.3), value: viewModel.errorMessage)
+        .overlay(alignment: .bottom) {
+            if !networkMonitor.isConnected {
+                HStack(spacing: 6) {
+                    Image(systemName: "wifi.slash")
+                        .font(.caption2)
+                    Text("Offline — changes saved locally")
+                        .font(.caption2)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.orange.gradient, in: Capsule())
+                .padding(.bottom, 4)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(response: 0.3), value: networkMonitor.isConnected)
+            }
+        }
         .sheet(isPresented: $showProfile) {
             ProfileView()
         }
@@ -263,6 +281,7 @@ struct SidebarWithListView: View {
                         Image(systemName: "line.3.horizontal")
                             .font(.title3)
                     }
+                    .accessibilityLabel("Menu")
                 }
             }
             .alert("New Folder", isPresented: $showNewFolderAlert) {

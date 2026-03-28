@@ -35,17 +35,19 @@ struct RichTextEditor: UIViewRepresentable {
         // Only update if the HTML actually changed externally (e.g., note switch)
         guard context.coordinator.shouldUpdateContent else { return }
 
-        let newAttributed = HTMLConverter.attributedString(from: htmlContent)
-        let currentHTML = HTMLConverter.html(from: textView.attributedText)
+        // Skip expensive conversion if content matches what we last set
+        guard htmlContent != context.coordinator.lastSetHTML else {
+            context.coordinator.shouldUpdateContent = false
+            return
+        }
 
-        // Avoid unnecessary updates that would reset cursor position
-        if currentHTML != htmlContent {
-            let selectedRange = textView.selectedRange
-            textView.attributedText = newAttributed
-            // Restore cursor if possible
-            if selectedRange.location <= textView.text.count {
-                textView.selectedRange = selectedRange
-            }
+        let selectedRange = textView.selectedRange
+        textView.attributedText = HTMLConverter.attributedString(from: htmlContent)
+        context.coordinator.lastSetHTML = htmlContent
+
+        // Restore cursor if possible
+        if selectedRange.location <= textView.text.count {
+            textView.selectedRange = selectedRange
         }
         context.coordinator.shouldUpdateContent = false
     }
@@ -55,6 +57,7 @@ struct RichTextEditor: UIViewRepresentable {
     class Coordinator: NSObject, UITextViewDelegate {
         var parent: RichTextEditor
         var shouldUpdateContent = true
+        var lastSetHTML: String = ""
 
         init(_ parent: RichTextEditor) {
             self.parent = parent

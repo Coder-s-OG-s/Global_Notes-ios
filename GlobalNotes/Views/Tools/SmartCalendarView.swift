@@ -17,6 +17,7 @@ struct SmartCalendarView: View {
                     Button { viewModel.previousMonth() } label: {
                         Image(systemName: "chevron.left")
                     }
+                    .accessibilityLabel("Previous month")
                     Spacer()
                     Text("\(viewModel.monthName) \(String(viewModel.currentYear))")
                         .font(.headline)
@@ -24,6 +25,7 @@ struct SmartCalendarView: View {
                     Button { viewModel.nextMonth() } label: {
                         Image(systemName: "chevron.right")
                     }
+                    .accessibilityLabel("Next month")
                 }
                 .padding()
 

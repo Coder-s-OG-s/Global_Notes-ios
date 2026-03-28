@@ -16,7 +16,8 @@ final class ProfileViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let user = try await client.auth.session.user
+            let session = try await client.auth.session
+            let user = session.user
             let response: UserProfile? = try? await client
                 .from("profiles")
                 .select()
