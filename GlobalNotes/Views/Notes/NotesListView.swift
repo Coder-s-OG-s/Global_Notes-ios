@@ -35,7 +35,9 @@ struct NotesListView: View {
                 }
                 .swipeActions(edge: .leading) {
                     Button {
-                        Task { @MainActor in await viewModel.toggleFavorite(note, context: modelContext) }
+                        Task { @MainActor in
+                            await viewModel.toggleFavorite(note, context: modelContext)
+                        }
                     } label: {
                         Label(
                             note.isFavorite ? "Unfavorite" : "Favorite",

@@ -5,6 +5,9 @@ import Foundation
 final class GeminiService {
     static let shared = GeminiService()
 
+    private var lastRequestTime: Date?
+    private let minimumInterval: TimeInterval = 2.0 // seconds between requests
+
     private init() {}
 
     private var apiURL: URL? {
@@ -50,6 +53,12 @@ final class GeminiService {
     }
 
     func generateText(prompt: String) async throws -> String {
+        // Rate limiting
+        if let last = lastRequestTime, Date.now.timeIntervalSince(last) < minimumInterval {
+            throw GeminiError.rateLimited
+        }
+        lastRequestTime = .now
+
         guard let url = apiURL else {
             throw GeminiError.notConfigured
         }
@@ -91,6 +100,7 @@ final class GeminiService {
         case notConfigured
         case invalidResponse
         case apiError(String)
+        case rateLimited
 
         var errorDescription: String? {
             switch self {
@@ -100,6 +110,8 @@ final class GeminiService {
                 return "Invalid response from AI service."
             case .apiError(let message):
                 return "AI Error: \(message)"
+            case .rateLimited:
+                return "Please wait a moment before sending another request."
             }
         }
     }

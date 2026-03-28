@@ -43,7 +43,7 @@ struct AudioRecorderView: View {
                     Button {
                         let html = """
                         <div style="display:flex;align-items:center;gap:8px;\
-                        padding:12px;background:#e8f4fd;border-radius:8px;\
+                        padding:12px;background:rgba(0,122,255,0.1);border-radius:8px;\
                         margin:8px 0;font-family:system-ui;">
                             <span style="font-size:24px;">🎙️</span>
                             <span>Audio Recording — \(formattedDuration)</span>

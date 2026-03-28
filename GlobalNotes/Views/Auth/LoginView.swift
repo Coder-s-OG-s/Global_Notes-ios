@@ -210,7 +210,7 @@ struct LoginView: View {
             StyledSecureField(placeholder: "Password", text: $password, icon: "lock")
 
             Button {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) // dismiss keyboard
                 Task {
                     if isSignUp {
                         await authViewModel.signUp(email: email, password: password, username: username)
